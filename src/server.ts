@@ -1,21 +1,33 @@
 import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
+import dotenv from "dotenv";
 import { PrismaClient } from "@prisma/client";
+import productRoutes from "./routes/productRoutes";
+import orderRoutes from "./routes/orderRoutes";
+import dashboardRoutes from "./routes/dashboardRoutes";
 
+// Initialize dotenv to load environment variables
+dotenv.config();
 const app = express();
 const prisma = new PrismaClient();
 
-app.use(cors());
+// Enable CORS for frontend
+app.use(
+  cors({
+    origin: "http://localhost:3000", // Frontend URL
+    credentials: true, // Allow cookies and authentication headers
+  })
+);
+
 app.use(express.json());
 
-// ✅ Middleware to handle async errors
-const asyncHandler =
-  (fn: (req: Request, res: Response, next: NextFunction) => Promise<any>) =>
+// Middleware to handle async errors
+const asyncHandler = (fn: (req: Request, res: Response, next: NextFunction) => Promise<any>) =>
   (req: Request, res: Response, next: NextFunction) => {
     Promise.resolve(fn(req, res, next)).catch(next);
   };
 
-// ✅ Insert Sample Data on Startup
+// Insert sample data on startup
 const insertSampleData = async () => {
   try {
     const existingProducts = await prisma.product.findMany();
@@ -25,6 +37,7 @@ const insertSampleData = async () => {
           name: "Sample Product",
           description: "This is a sample product.",
           price: 99.99,
+          image: ""
         },
       });
       console.log("✅ Sample data inserted into database.");
@@ -34,89 +47,20 @@ const insertSampleData = async () => {
   }
 };
 
-// ✅ Get all products
-app.get(
-  "/products",
-  asyncHandler(async (req: Request, res: Response) => {
-    const products = await prisma.product.findMany();
-    res.json(products);
-  })
-);
+// Routes
+app.use("/api/products", productRoutes); // Prefixed with /api
+app.use("/api/orders", orderRoutes); // Prefixed with /api
+app.use("/api/dashboard", dashboardRoutes); // Prefixed with /api
 
-// ✅ Get a single product by ID
-app.get(
-  "/products/:id",
-  asyncHandler(async (req: Request, res: Response) => {
-    const { id } = req.params;
-    const product = await prisma.product.findUnique({
-      where: { id: Number(id) },
-    });
-
-    if (!product) {
-      res.status(404).json({ message: "Product not found" });
-      return;
-    }
-
-    res.json(product);
-  })
-);
-
-// ✅ Create a new product
-app.post(
-  "/products",
-  asyncHandler(async (req: Request, res: Response) => {
-    const { name, description, price } = req.body;
-
-    if (!name || !description || price === undefined) {
-      res.status(400).json({ error: "All fields are required" });
-      return;
-    }
-
-    const product = await prisma.product.create({
-      data: { name, description, price },
-    });
-
-    res.status(201).json(product);
-  })
-);
-
-// ✅ Update a product
-app.put(
-  "/products/:id",
-  asyncHandler(async (req: Request, res: Response) => {
-    const { id } = req.params;
-    const { name, description, price } = req.body;
-
-    const updatedProduct = await prisma.product.update({
-      where: { id: Number(id) },
-      data: { name, description, price },
-    });
-
-    res.json(updatedProduct);
-  })
-);
-
-// ✅ Delete a product
-app.delete(
-  "/products/:id",
-  asyncHandler(async (req: Request, res: Response) => {
-    const { id } = req.params;
-    await prisma.product.delete({
-      where: { id: Number(id) },
-    });
-
-    res.json({ message: "Product deleted successfully" });
-  })
-);
-
-// ✅ Global Error Handler Middleware
+// Global Error Handler Middleware
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.error("❌ Server Error:", err);
   res.status(500).json({ error: "Internal Server Error" });
 });
 
 const PORT = process.env.PORT || 5000;
+
 app.listen(PORT, async () => {
   console.log(`🚀 Server running on port ${PORT}`);
-  await insertSampleData(); // ✅ Insert sample data on startup
+  await insertSampleData(); // Insert sample data on startup
 });
