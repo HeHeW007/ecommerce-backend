@@ -44,7 +44,13 @@ export const createProduct = async (req: Request, res: Response): Promise<void> 
     }
 
     const product = await prisma.product.create({
-      data: { name, description, price, image },
+      data: {
+        name,
+        description,
+        price,
+        image,
+        updatedAt: new Date(), // ✅ Fix: Use updatedAt instead of updatesAt
+      },
     });
 
     res.status(201).json(product);
@@ -72,6 +78,8 @@ export const updateProduct = async (req: Request, res: Response): Promise<void> 
       res.status(400).json({ error: "No fields to update" });
       return;
     }
+
+    updateData.updatedAt = new Date(); // ✅ Fix: Ensure updatedAt is set
 
     const updatedProduct = await prisma.product.update({
       where: { id: Number(id) },
