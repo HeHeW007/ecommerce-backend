@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha --require ts-node/register --exit --timeout 5000 src/tests/**/*.test.ts",
     "dev": "nodemon src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js"
@@ -22,12 +22,18 @@
   },
   "devDependencies": {
     "@types/bcryptjs": "^3.0.0",
+    "@types/chai": "^5.2.1",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.1",
     "@types/jsonwebtoken": "^9.0.9",
+    "@types/mocha": "^10.0.10",
     "@types/node": "^22.13.10",
+    "@types/supertest": "^6.0.3",
+    "chai": "^5.2.0",
+    "mocha": "^11.1.0",
     "nodemon": "^3.1.9",
     "prisma": "^6.5.0",
+    "supertest": "^7.1.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.2"
   },

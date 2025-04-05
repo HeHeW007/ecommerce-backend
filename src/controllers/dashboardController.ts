@@ -12,3 +12,5 @@ export const getDashboardStats = async (_req: Request, res: Response) => {
 
   res.json({ totalOrders, totalProducts, latestProducts, latestOrders });
 };
+
+

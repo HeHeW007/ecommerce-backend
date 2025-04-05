@@ -5,6 +5,7 @@ import { PrismaClient } from "@prisma/client";
 import productRoutes from "./routes/productRoutes";
 import orderRoutes from "./routes/orderRoutes";
 import dashboardRoutes from "./routes/dashboardRoutes";
+import { updateOrderStatus } from "./controllers/orderController";
 
 // Initialize dotenv to load environment variables
 dotenv.config();
@@ -60,7 +61,12 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 
 const PORT = process.env.PORT || 5000;
 
+// Routes
+app.put("/api/orders/:id/status", updateOrderStatus); // Endpoint for updating the status of an order
+
 app.listen(PORT, async () => {
   console.log(`🚀 Server running on port ${PORT}`);
   await insertSampleData(); // Insert sample data on startup
 });
+
+export { app };
